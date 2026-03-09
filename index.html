@@ -1,0 +1,2429 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تزكية — Tazkiyah App</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dark: #8B6914;
+    --dark: #0A0A0F;
+    --dark2: #111118;
+    --dark3: #1A1A24;
+    --dark4: #22222F;
+    --dark5: #2C2C3E;
+    --text: #E8E8F0;
+    --text2: #9090A8;
+    --green: #2ECC71;
+    --green2: #27AE60;
+    --red: #E74C3C;
+    --blue: #3498DB;
+    --purple: #9B59B6;
+    --radius: 16px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* BACKGROUND */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 10% 20%, rgba(201,168,76,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 80%, rgba(46,204,113,0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* GEOMETRIC PATTERN */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C9A84C' fill-opacity='0.03'%3E%3Cpath d='M30 0L60 30L30 60L0 30z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app-wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 0 0 100px 0;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 24px 20px 16px;
+    text-align: center;
+    position: relative;
+  }
+
+  .header-arabic {
+    font-family: 'Amiri', serif;
+    font-size: 28px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    line-height: 1.2;
+    text-shadow: 0 0 30px rgba(201,168,76,0.4);
+  }
+
+  .header-sub {
+    font-size: 11px;
+    color: var(--text2);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .bismillah {
+    font-family: 'Amiri', serif;
+    font-size: 13px;
+    color: var(--gold-dark);
+    margin-top: 8px;
+    opacity: 0.7;
+  }
+
+  /* PRAYER TIMES BAR */
+  .prayer-bar {
+    background: var(--dark3);
+    border: 1px solid rgba(201,168,76,0.15);
+    border-left: none; border-right: none;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    overflow-x: auto;
+    gap: 8px;
+  }
+
+  .prayer-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 50px;
+  }
+
+  .prayer-name {
+    font-size: 9px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .prayer-time {
+    font-size: 12px;
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  .prayer-item.active .prayer-name { color: var(--gold); }
+  .prayer-item.active .prayer-time {
+    color: white;
+    background: var(--gold);
+    padding: 2px 6px;
+    border-radius: 6px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 16px 20px 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--dark3);
+    color: var(--text2);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .tab.active {
+    background: var(--gold);
+    color: var(--dark);
+    border-color: var(--gold);
+    box-shadow: 0 4px 16px rgba(201,168,76,0.35);
+  }
+
+  .tab:not(.active):hover {
+    border-color: rgba(201,168,76,0.3);
+    color: var(--text);
+  }
+
+  /* SECTIONS */
+  .section { display: none; padding: 0 20px; }
+  .section.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--dark3);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,0.3), transparent);
+  }
+
+  .card-gold {
+    border-color: rgba(201,168,76,0.2);
+    background: linear-gradient(135deg, rgba(201,168,76,0.08), var(--dark3));
+  }
+
+  /* ====== NOFAP SECTION ====== */
+  .counter-display {
+    text-align: center;
+    padding: 24px 0;
+    position: relative;
+  }
+
+  .counter-ring {
+    width: 180px;
+    height: 180px;
+    margin: 0 auto 16px;
+    position: relative;
+  }
+
+  .counter-ring svg {
+    transform: rotate(-90deg);
+    filter: drop-shadow(0 0 20px rgba(201,168,76,0.3));
+  }
+
+  .counter-ring-inner {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+
+  .counter-days {
+    font-size: 52px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+
+  .counter-label {
+    font-size: 11px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .counter-streak {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 8px;
+  }
+
+  .streak-stat {
+    text-align: center;
+  }
+
+  .streak-num {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .streak-lbl {
+    font-size: 10px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* CHECKPOINTS */
+  .checkpoints-title {
+    font-size: 13px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  .checkpoint {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .checkpoint:last-child { border-bottom: none; }
+
+  .cp-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.08);
+    background: var(--dark4);
+    transition: all 0.3s;
+  }
+
+  .checkpoint.unlocked .cp-icon {
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    border-color: var(--gold);
+    box-shadow: 0 4px 16px rgba(201,168,76,0.4);
+  }
+
+  .checkpoint.current .cp-icon {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.1);
+    animation: pulse-gold 2s infinite;
+  }
+
+  @keyframes pulse-gold {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(201,168,76,0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(201,168,76,0); }
+  }
+
+  .cp-info { flex: 1; }
+
+  .cp-day {
+    font-size: 11px;
+    color: var(--gold);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .cp-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 2px 0;
+  }
+
+  .checkpoint.unlocked .cp-name { color: var(--gold-light); }
+
+  .cp-reward {
+    font-size: 11px;
+    color: var(--text2);
+  }
+
+  .cp-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .cp-badge.done { background: rgba(46,204,113,0.15); color: var(--green); }
+  .cp-badge.next { background: rgba(201,168,76,0.15); color: var(--gold); }
+  .cp-badge.locked { background: rgba(255,255,255,0.05); color: var(--text2); }
+
+  /* RESET BUTTON */
+  .btn-danger {
+    background: rgba(231,76,60,0.1);
+    border: 1px solid rgba(231,76,60,0.3);
+    color: var(--red);
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-danger:hover {
+    background: rgba(231,76,60,0.2);
+    border-color: rgba(231,76,60,0.5);
+  }
+
+  .btn-gold {
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    border: none;
+    color: var(--dark);
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 16px rgba(201,168,76,0.3);
+  }
+
+  .btn-gold:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(201,168,76,0.4);
+  }
+
+  .btn-ghost {
+    background: var(--dark4);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+  }
+
+  /* AYAH CARD */
+  .ayah-card {
+    background: linear-gradient(135deg, rgba(201,168,76,0.1), rgba(46,204,113,0.05));
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  .ayah-text {
+    font-family: 'Amiri', serif;
+    font-size: 20px;
+    color: var(--gold-light);
+    line-height: 1.8;
+    margin-bottom: 8px;
+    direction: rtl;
+  }
+
+  .ayah-ref {
+    font-size: 11px;
+    color: var(--text2);
+    font-style: italic;
+  }
+
+  /* ====== SCHEDULE SECTION ====== */
+  .schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .schedule-date {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .schedule-day {
+    font-size: 12px;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .progress-bar-wrap {
+    background: var(--dark4);
+    border-radius: 8px;
+    height: 6px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold));
+    border-radius: 8px;
+    transition: width 0.5s ease;
+  }
+
+  .progress-text {
+    font-size: 11px;
+    color: var(--text2);
+    text-align: right;
+  }
+
+  /* TIME BLOCKS */
+  .time-block {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 8px;
+    align-items: flex-start;
+  }
+
+  .time-label {
+    font-size: 11px;
+    color: var(--gold);
+    font-weight: 600;
+    width: 42px;
+    flex-shrink: 0;
+    padding-top: 14px;
+    text-align: right;
+    letter-spacing: 0.5px;
+  }
+
+  .time-line {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 16px;
+  }
+
+  .time-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--dark5);
+    border: 2px solid rgba(255,255,255,0.1);
+    flex-shrink: 0;
+  }
+
+  .time-dot.done { background: var(--green); border-color: var(--green); }
+  .time-dot.active { background: var(--gold); border-color: var(--gold); animation: pulse-gold 2s infinite; }
+
+  .time-connector {
+    width: 1px;
+    flex: 1;
+    min-height: 20px;
+    background: rgba(255,255,255,0.06);
+    margin-top: 3px;
+  }
+
+  .task-item {
+    flex: 1;
+    background: var(--dark4);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 6px;
+  }
+
+  .task-item:hover { border-color: rgba(201,168,76,0.2); }
+
+  .task-check {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    border: 2px solid rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    font-size: 11px;
+  }
+
+  .task-item.completed .task-check {
+    background: var(--green);
+    border-color: var(--green);
+  }
+
+  .task-item.completed .task-name {
+    text-decoration: line-through;
+    color: var(--text2);
+  }
+
+  .task-info { flex: 1; }
+
+  .task-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    transition: all 0.2s;
+  }
+
+  .task-meta {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 2px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .task-cat {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .cat-sport { background: rgba(52,152,219,0.15); color: var(--blue); }
+  .cat-deen { background: rgba(201,168,76,0.15); color: var(--gold); }
+  .cat-work { background: rgba(155,89,182,0.15); color: var(--purple); }
+  .cat-health { background: rgba(46,204,113,0.15); color: var(--green); }
+  .cat-self { background: rgba(231,76,60,0.15); color: var(--red); }
+
+  /* ADD TASK */
+  .add-task-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--dark4);
+    border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 13px;
+    font-family: 'Outfit', sans-serif;
+    width: 100%;
+    transition: all 0.2s;
+    margin-top: 6px;
+  }
+
+  .add-task-btn:hover {
+    border-color: rgba(201,168,76,0.3);
+    color: var(--gold);
+  }
+
+  /* ====== SPORT SECTION ====== */
+  .sport-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .sport-stat-card {
+    background: var(--dark3);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sport-stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: -10px; right: -10px;
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .sport-stat-icon { font-size: 24px; margin-bottom: 8px; }
+  .sport-stat-num {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .sport-stat-unit {
+    font-size: 11px;
+    color: var(--gold);
+    opacity: 0.7;
+  }
+  .sport-stat-label {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* CHART */
+  .chart-wrap {
+    position: relative;
+    height: 120px;
+    margin: 8px 0;
+  }
+
+  .chart-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 100%;
+    padding-bottom: 20px;
+  }
+
+  .chart-bar-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  .chart-bar {
+    width: 100%;
+    border-radius: 6px 6px 0 0;
+    background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+    transition: height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    min-height: 4px;
+    cursor: pointer;
+    opacity: 0.6;
+  }
+
+  .chart-bar:hover, .chart-bar.today { opacity: 1; }
+
+  .chart-bar-label {
+    font-size: 9px;
+    color: var(--text2);
+    text-transform: uppercase;
+  }
+
+  /* WORKOUT LOG */
+  .workout-log {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .workout-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--dark4);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+
+  .workout-type {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .workout-icon { font-size: 18px; }
+  .workout-name { font-size: 14px; font-weight: 500; }
+  .workout-info { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  .workout-sets {
+    display: flex;
+    gap: 4px;
+  }
+
+  .set-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    opacity: 0.3;
+  }
+
+  .set-dot.done { opacity: 1; }
+
+  /* ====== DEEN SECTION ====== */
+  .prayer-check-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .prayer-check {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+
+  .prayer-check-circle {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.3s;
+    background: var(--dark4);
+  }
+
+  .prayer-check.done .prayer-check-circle {
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    border-color: var(--gold);
+    box-shadow: 0 4px 12px rgba(201,168,76,0.4);
+  }
+
+  .prayer-check-name {
+    font-size: 10px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+  }
+
+  .prayer-check.done .prayer-check-name { color: var(--gold); }
+
+  /* DHIKR */
+  .dhikr-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer;
+  }
+
+  .dhikr-item:last-child { border-bottom: none; }
+
+  .dhikr-arabic {
+    font-family: 'Amiri', serif;
+    font-size: 18px;
+    color: var(--gold-light);
+    direction: rtl;
+  }
+
+  .dhikr-french {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 2px;
+    direction: ltr;
+  }
+
+  .dhikr-counter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .dhikr-count {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--gold);
+    min-width: 40px;
+    text-align: center;
+  }
+
+  .dhikr-target {
+    font-size: 10px;
+    color: var(--text2);
+  }
+
+  .dhikr-mini-bar {
+    width: 40px;
+    height: 3px;
+    background: var(--dark5);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .dhikr-mini-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  /* WEEKLY HEATMAP */
+  .heatmap {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin: 8px 0;
+  }
+
+  .heatmap-day {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    background: var(--dark5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-direction: column;
+    gap: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .heatmap-day .hd-num { font-size: 11px; font-weight: 700; color: var(--text); }
+
+  .heatmap-day.level-1 { background: rgba(201,168,76,0.15); }
+  .heatmap-day.level-2 { background: rgba(201,168,76,0.3); }
+  .heatmap-day.level-3 { background: rgba(201,168,76,0.5); }
+  .heatmap-day.level-4 { background: var(--gold); }
+  .heatmap-day.level-4 .hd-num, .heatmap-day.level-4 { color: var(--dark); }
+  .heatmap-day.today { border: 2px solid var(--gold); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 100;
+    backdrop-filter: blur(8px);
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 20px 20px 0 0;
+    padding: 24px;
+    width: 100%;
+    max-width: 420px;
+    animation: slideUp 0.3s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+
+  .modal-input {
+    background: var(--dark4);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    width: 100%;
+    margin-bottom: 10px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .modal-input:focus { border-color: rgba(201,168,76,0.4); }
+
+  .cat-select {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .cat-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+  }
+
+  .cat-btn.sport { background: rgba(52,152,219,0.1); color: var(--blue); border-color: rgba(52,152,219,0.2); }
+  .cat-btn.deen { background: rgba(201,168,76,0.1); color: var(--gold); border-color: rgba(201,168,76,0.2); }
+  .cat-btn.work { background: rgba(155,89,182,0.1); color: var(--purple); border-color: rgba(155,89,182,0.2); }
+  .cat-btn.health { background: rgba(46,204,113,0.1); color: var(--green); border-color: rgba(46,204,113,0.2); }
+  .cat-btn.self { background: rgba(231,76,60,0.1); color: var(--red); border-color: rgba(231,76,60,0.2); }
+  .cat-btn.selected { opacity: 1 !important; transform: scale(1.05); }
+  .cat-btn:not(.selected) { opacity: 0.5; }
+
+  /* CELEBRATION */
+  .celebration {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    pointer-events: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .celebration.show { display: flex; }
+
+  .celebration-card {
+    background: var(--dark2);
+    border: 2px solid var(--gold);
+    border-radius: 20px;
+    padding: 32px;
+    text-align: center;
+    pointer-events: all;
+    max-width: 300px;
+    animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 0 60px rgba(201,168,76,0.3);
+    position: relative;
+    z-index: 201;
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .celebration-emoji { font-size: 60px; margin-bottom: 12px; display: block; }
+  .celebration-title { font-size: 22px; font-weight: 800; color: var(--gold); margin-bottom: 8px; }
+  .celebration-sub { font-size: 14px; color: var(--text2); line-height: 1.5; }
+  .celebration-arabic {
+    font-family: 'Amiri', serif;
+    font-size: 20px;
+    color: var(--gold-light);
+    margin: 12px 0;
+    direction: rtl;
+  }
+
+  /* CONFETTI */
+  .confetti-piece {
+    position: fixed;
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    animation: confettiFall 3s ease-in forwards;
+    z-index: 202;
+  }
+
+  @keyframes confettiFall {
+    0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(17,17,24,0.95);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    backdrop-filter: blur(20px);
+    display: flex;
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+    z-index: 50;
+  }
+
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 6px 0;
+    transition: all 0.2s;
+  }
+
+  .nav-icon { font-size: 20px; transition: transform 0.2s; }
+  .nav-label {
+    font-size: 9px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+  }
+
+  .nav-item.active .nav-label { color: var(--gold); }
+  .nav-item.active .nav-icon { transform: scale(1.2); filter: drop-shadow(0 0 6px rgba(201,168,76,0.6)); }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-size: 11px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 16px 0 10px;
+  }
+
+  /* QUOTE */
+  .quote-strip {
+    background: linear-gradient(135deg, rgba(201,168,76,0.08), transparent);
+    border-left: 3px solid var(--gold);
+    padding: 12px 16px;
+    border-radius: 0 10px 10px 0;
+    margin-bottom: 12px;
+  }
+
+  .quote-text { font-size: 13px; color: var(--text); font-style: italic; line-height: 1.5; }
+  .quote-source { font-size: 11px; color: var(--gold); margin-top: 6px; font-weight: 600; }
+
+  /* URGENCY / MOTIVATION */
+  .motivation-card {
+    background: var(--dark3);
+    border: 1px solid rgba(231,76,60,0.2);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .motivation-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--red), var(--gold));
+  }
+
+  .motivation-title {
+    font-size: 12px;
+    color: var(--red);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+
+  .motivation-text {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  /* INPUT RANGE */
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--dark5);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(201,168,76,0.5);
+  }
+
+  /* STREAK FLAME */
+  .streak-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, rgba(231,76,60,0.15), rgba(201,168,76,0.15));
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* RIPPLE */
+  @keyframes ripple {
+    from { transform: scale(0); opacity: 0.5; }
+    to { transform: scale(4); opacity: 0; }
+  }
+
+  .scrollbar-thin { scrollbar-width: thin; scrollbar-color: rgba(201,168,76,0.2) transparent; }
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .flex { display: flex; }
+  .gap-8 { gap: 8px; }
+  .justify-between { justify-content: space-between; }
+  .align-center { align-items: center; }
+  .w-full { width: 100%; }
+</style>
+</head>
+<body>
+
+<div class="app-wrapper">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-arabic">تزكية النفس</div>
+    <div class="header-sub">Tazkiyah — Purification de l'Âme</div>
+    <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
+  </div>
+
+  <!-- PRAYER TIMES -->
+  <div class="prayer-bar">
+    <div class="prayer-item" id="pr-fajr">
+      <span class="prayer-name">Fajr</span>
+      <span class="prayer-time">06:12</span>
+    </div>
+    <div class="prayer-item" id="pr-dhuhr">
+      <span class="prayer-name">Dhuhr</span>
+      <span class="prayer-time">13:24</span>
+    </div>
+    <div class="prayer-item active" id="pr-asr">
+      <span class="prayer-name">Asr</span>
+      <span class="prayer-time">16:45</span>
+    </div>
+    <div class="prayer-item" id="pr-maghrib">
+      <span class="prayer-name">Maghrib</span>
+      <span class="prayer-time">19:52</span>
+    </div>
+    <div class="prayer-item" id="pr-isha">
+      <span class="prayer-name">Isha</span>
+      <span class="prayer-time">21:18</span>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('nofap')">🔥 Combattant</div>
+    <div class="tab" onclick="switchTab('schedule')">📅 Journée</div>
+    <div class="tab" onclick="switchTab('sport')">💪 Sport</div>
+    <div class="tab" onclick="switchTab('deen')">☪️ Deen</div>
+    <div class="tab" onclick="switchTab('stats')">📊 Stats</div>
+  </div>
+
+  <!-- ======= NOFAP SECTION ======= -->
+  <div class="section active" id="section-nofap">
+    
+    <div class="ayah-card">
+      <div class="ayah-text">وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا</div>
+      <div class="ayah-ref">« Quiconque craint Allah, Il lui accordera une issue favorable » — Sourate At-Talaq 65:2</div>
+    </div>
+
+    <!-- COUNTER -->
+    <div class="card card-gold">
+      <div class="counter-display">
+        <div class="counter-ring">
+          <svg width="180" height="180" viewBox="0 0 180 180">
+            <circle cx="90" cy="90" r="80" fill="none" stroke="rgba(201,168,76,0.1)" stroke-width="8"/>
+            <circle id="ring-progress" cx="90" cy="90" r="80" fill="none" stroke="url(#goldGrad)" stroke-width="8"
+              stroke-linecap="round"
+              stroke-dasharray="502.65"
+              stroke-dashoffset="502.65"
+              style="transition: stroke-dashoffset 1.5s ease;"/>
+            <defs>
+              <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#8B6914"/>
+                <stop offset="100%" stop-color="#E8C97A"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="counter-ring-inner">
+            <div class="counter-days" id="days-count">0</div>
+            <div class="counter-label">JOURS</div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:center; margin-bottom:16px;">
+          <div class="streak-badge" id="level-badge">🌱 Nouveau Départ</div>
+        </div>
+
+        <div class="counter-streak">
+          <div class="streak-stat">
+            <div class="streak-num" id="best-streak">0</div>
+            <div class="streak-lbl">Record</div>
+          </div>
+          <div class="streak-stat">
+            <div class="streak-num" id="total-resets">0</div>
+            <div class="streak-lbl">Rechutes</div>
+          </div>
+          <div class="streak-stat">
+            <div class="streak-num" id="total-days">0</div>
+            <div class="streak-lbl">Total Jours</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="quote-strip" id="motivation-quote">
+        <div class="quote-text">"Celui qui abandonne quelque chose pour Allah, Allah le remplace par quelque chose de meilleur."</div>
+        <div class="quote-source">— Hadith</div>
+      </div>
+
+      <button class="btn-danger" onclick="confirmReset()">⚠️ Déclarer une rechute</button>
+    </div>
+
+    <!-- CHECKPOINTS -->
+    <div class="card">
+      <div class="checkpoints-title">⚔️ Checkpoints de Purification</div>
+      <div id="checkpoints-list"></div>
+    </div>
+
+    <!-- MOTIVATION -->
+    <div class="motivation-card">
+      <div class="motivation-title">⚠️ Rappel Urgent</div>
+      <div class="motivation-text" id="daily-reminder">Chaque jour propre est une victoire sur Shaytan. Il veut te voir t'affaiblir. Prouve-lui qu'il a tort. Allah voit ta lutte et l'apprécie.</div>
+    </div>
+
+    <!-- EMERGENCY -->
+    <div class="card">
+      <div class="section-title">🆘 Plan d'urgence (si envie forte)</div>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+        <div class="task-item" onclick="emergencyAction(this, '🤲 Faire Wudu immédiatement')">
+          <div class="task-check">🤲</div>
+          <div class="task-info"><div class="task-name">Faire Wudu immédiatement</div><div class="task-meta">Purifie le corps et l'esprit</div></div>
+        </div>
+        <div class="task-item" onclick="emergencyAction(this, '📿 Lire Ayat Al-Kursi')">
+          <div class="task-check">📿</div>
+          <div class="task-info"><div class="task-name">Lire Ayat Al-Kursi</div><div class="task-meta">Protection divine contre Shaytan</div></div>
+        </div>
+        <div class="task-item" onclick="emergencyAction(this, '🏃 Sortir faire 20 pompes')">
+          <div class="task-check">🏃</div>
+          <div class="task-info"><div class="task-name">Faire 20 pompes / courir</div><div class="task-meta">Canalise l'énergie physiquement</div></div>
+        </div>
+        <div class="task-item" onclick="emergencyAction(this, '❄️ Douche froide')">
+          <div class="task-check">❄️</div>
+          <div class="task-info"><div class="task-name">Douche froide</div><div class="task-meta">Reset hormonal immédiat</div></div>
+        </div>
+        <div class="task-item" onclick="emergencyAction(this, '📖 Ouvrir le Coran')">
+          <div class="task-check">📖</div>
+          <div class="task-info"><div class="task-name">Ouvrir le Coran — Sourate Al-Mu'minun</div><div class="task-meta">Les croyants qui protègent leur chasteté</div></div>
+        </div>
+        <div class="task-item" onclick="emergencyAction(this, '☎️ Appeler un ami')">
+          <div class="task-check">☎️</div>
+          <div class="task-info"><div class="task-name">Appeler un frère / ami</div><div class="task-meta">Briser l'isolement</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ======= SCHEDULE SECTION ======= -->
+  <div class="section" id="section-schedule">
+    
+    <div class="schedule-header">
+      <div>
+        <div class="schedule-day" id="current-day-name">LUNDI</div>
+        <div class="schedule-date" id="current-date">09 Mars 2026</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="streak-badge" id="tasks-done-badge">0/0 ✓</div>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 14px 16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <div style="font-size:13px; font-weight:600; color:var(--text);">Progression du jour</div>
+        <div class="progress-text" id="progress-pct">0%</div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="main-progress-bar" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- TASKS LIST -->
+    <div id="tasks-container">
+      <!-- Populated by JS -->
+    </div>
+
+    <button class="add-task-btn" onclick="openAddTask()">
+      <span style="font-size:18px;">＋</span>
+      <span>Ajouter une tâche</span>
+    </button>
+
+    <div style="height:12px;"></div>
+
+  </div>
+
+  <!-- ======= SPORT SECTION ======= -->
+  <div class="section" id="section-sport">
+
+    <div class="sport-grid">
+      <div class="sport-stat-card">
+        <div class="sport-stat-icon">🔥</div>
+        <div class="sport-stat-num" id="sport-streak">0</div>
+        <div class="sport-stat-label">Jours streak</div>
+      </div>
+      <div class="sport-stat-card">
+        <div class="sport-stat-icon">💪</div>
+        <div class="sport-stat-num" id="workouts-week">0</div>
+        <div class="sport-stat-label">Séances / sem.</div>
+      </div>
+      <div class="sport-stat-card">
+        <div class="sport-stat-icon">⏱️</div>
+        <div class="sport-stat-num" id="total-minutes">0</div>
+        <div class="sport-stat-unit">min</div>
+        <div class="sport-stat-label">Cette semaine</div>
+      </div>
+      <div class="sport-stat-card">
+        <div class="sport-stat-icon">🏆</div>
+        <div class="sport-stat-num" id="total-workouts">0</div>
+        <div class="sport-stat-label">Total séances</div>
+      </div>
+    </div>
+
+    <!-- WEEKLY CHART -->
+    <div class="card">
+      <div class="section-title">📈 Activité hebdomadaire</div>
+      <div class="chart-wrap">
+        <div class="chart-bars" id="weekly-chart"></div>
+      </div>
+    </div>
+
+    <!-- LOG WORKOUT -->
+    <div class="card">
+      <div class="section-title">🎯 Logger une séance</div>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+        <select class="modal-input" id="workout-type-select" style="cursor:pointer;">
+          <option value="">Choisir le type...</option>
+          <option value="🏋️ Musculation">🏋️ Musculation</option>
+          <option value="🏃 Course">🏃 Course à pied</option>
+          <option value="🚴 Vélo">🚴 Vélo / Cardio</option>
+          <option value="🤸 Pompes">🤸 Pompes / Tractions</option>
+          <option value="🥊 Combat">🥊 Arts martiaux</option>
+          <option value="🏊 Natation">🏊 Natation</option>
+          <option value="🧘 Étirements">🧘 Étirements / Yoga</option>
+          <option value="⚽ Foot">⚽ Foot / Sport collectif</option>
+        </select>
+        <div style="display:flex; gap:8px;">
+          <input type="number" class="modal-input" id="workout-duration" placeholder="Durée (min)" min="5" max="300" style="flex:1; margin:0;">
+          <input type="number" class="modal-input" id="workout-intensity" placeholder="Intensité /10" min="1" max="10" style="flex:1; margin:0;">
+        </div>
+        <button class="btn-gold" onclick="logWorkout()">✅ Logger la séance</button>
+      </div>
+    </div>
+
+    <!-- RECENT WORKOUTS -->
+    <div class="card">
+      <div class="section-title">📋 Séances récentes</div>
+      <div class="workout-log" id="workout-log">
+        <div style="text-align:center; color:var(--text2); font-size:13px; padding:16px;">
+          Aucune séance enregistrée
+        </div>
+      </div>
+    </div>
+
+    <!-- BODY WEIGHT -->
+    <div class="card">
+      <div class="section-title">⚖️ Suivi du poids</div>
+      <div style="display:flex; gap:8px; margin-top:4px; margin-bottom:12px;">
+        <input type="number" class="modal-input" id="weight-input" placeholder="Ton poids (kg)" step="0.1" style="flex:1; margin:0;">
+        <button class="btn-gold" onclick="logWeight()" style="width:auto; padding:12px 16px; white-space:nowrap; flex-shrink:0;">+</button>
+      </div>
+      <div id="weight-history" style="display:flex; flex-direction:column; gap:6px;"></div>
+    </div>
+
+  </div>
+
+  <!-- ======= DEEN SECTION ======= -->
+  <div class="section" id="section-deen">
+
+    <!-- PRAYERS -->
+    <div class="card card-gold">
+      <div class="section-title">🕌 Prières du jour</div>
+      <div class="prayer-check-grid">
+        <div class="prayer-check" id="pcheck-fajr" onclick="togglePrayer('fajr')">
+          <div class="prayer-check-circle">🌅</div>
+          <div class="prayer-check-name">Fajr</div>
+        </div>
+        <div class="prayer-check" id="pcheck-dhuhr" onclick="togglePrayer('dhuhr')">
+          <div class="prayer-check-circle">☀️</div>
+          <div class="prayer-check-name">Dhuhr</div>
+        </div>
+        <div class="prayer-check" id="pcheck-asr" onclick="togglePrayer('asr')">
+          <div class="prayer-check-circle">🌤️</div>
+          <div class="prayer-check-name">Asr</div>
+        </div>
+        <div class="prayer-check" id="pcheck-maghrib" onclick="togglePrayer('maghrib')">
+          <div class="prayer-check-circle">🌅</div>
+          <div class="prayer-check-name">Maghrib</div>
+        </div>
+        <div class="prayer-check" id="pcheck-isha" onclick="togglePrayer('isha')">
+          <div class="prayer-check-circle">🌙</div>
+          <div class="prayer-check-name">Isha</div>
+        </div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="prayers-progress" style="width:0%;"></div>
+      </div>
+      <div class="progress-text" id="prayers-count" style="margin-top:4px;">0/5 prières</div>
+    </div>
+
+    <!-- DHIKR -->
+    <div class="card">
+      <div class="section-title">📿 Adhkâr du jour</div>
+      <div id="dhikr-list"></div>
+      <button class="btn-ghost mt-12" onclick="resetDhikr()" style="font-size:12px; padding:10px;">🔄 Réinitialiser le dhikr</button>
+    </div>
+
+    <!-- QURAN -->
+    <div class="card">
+      <div class="section-title">📖 Lecture du Coran</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div>
+          <div style="font-size:15px; font-weight:600;">Pages aujourd'hui</div>
+          <div style="font-size:12px; color:var(--text2); margin-top:2px;">Objectif: <span id="quran-goal">5 pages</span></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button onclick="changeQuranPages(-1)" style="background:var(--dark5); border:none; color:var(--text); width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center;">−</button>
+          <div style="font-size:24px; font-weight:800; color:var(--gold); min-width:36px; text-align:center;" id="quran-pages">0</div>
+          <button onclick="changeQuranPages(1)" style="background:var(--dark5); border:none; color:var(--text); width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center;">+</button>
+        </div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="quran-progress" style="width:0%; background: linear-gradient(90deg, var(--green2), var(--green));"></div>
+      </div>
+    </div>
+
+    <!-- WEEKLY HEATMAP DEEN -->
+    <div class="card">
+      <div class="section-title">📅 Heatmap de ta semaine islamique</div>
+      <div class="heatmap" id="deen-heatmap"></div>
+      <div style="display:flex; gap:8px; margin-top:10px; align-items:center; justify-content:flex-end;">
+        <div style="font-size:10px; color:var(--text2);">Moins</div>
+        <div style="display:flex; gap:3px;">
+          <div style="width:12px;height:12px;border-radius:3px;background:var(--dark5);"></div>
+          <div style="width:12px;height:12px;border-radius:3px;background:rgba(201,168,76,0.2);"></div>
+          <div style="width:12px;height:12px;border-radius:3px;background:rgba(201,168,76,0.5);"></div>
+          <div style="width:12px;height:12px;border-radius:3px;background:var(--gold);"></div>
+        </div>
+        <div style="font-size:10px; color:var(--text2);">Plus</div>
+      </div>
+    </div>
+
+    <!-- DUAS -->
+    <div class="card">
+      <div class="section-title">🤲 Invocations — Force contre Shaytan</div>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+        <div class="ayah-card" style="margin:0; text-align:right;">
+          <div class="ayah-text" style="font-size:16px;">أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ</div>
+          <div class="ayah-ref" style="text-align:left;">Je me réfugie auprès d'Allah contre Shaytan le maudit</div>
+        </div>
+        <div class="ayah-card" style="margin:0; text-align:right;">
+          <div class="ayah-text" style="font-size:16px;">اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفَافَ وَالْعِفَّةَ</div>
+          <div class="ayah-ref" style="text-align:left;">Ô Allah, je Te demande la chasteté et la pureté</div>
+        </div>
+        <div class="ayah-card" style="margin:0; text-align:right;">
+          <div class="ayah-text" style="font-size:16px;">رَبَّنَا لَا تُزِغْ قُلُوبَنَا بَعْدَ إِذْ هَدَيْتَنَا</div>
+          <div class="ayah-ref" style="text-align:left;">Seigneur, ne fais pas dévier nos cœurs après nous avoir guidés — Âl-'Imrân 3:8</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ======= STATS SECTION ======= -->
+  <div class="section" id="section-stats">
+
+    <div class="card card-gold" style="text-align:center; padding:24px;">
+      <div style="font-size:40px; margin-bottom:8px;">📊</div>
+      <div style="font-size:20px; font-weight:700; color:var(--gold);">Tableau de bord global</div>
+      <div style="font-size:12px; color:var(--text2); margin-top:4px;">Ta progression sur tous les fronts</div>
+    </div>
+
+    <!-- GLOBAL SCORE -->
+    <div class="card">
+      <div class="section-title">🏅 Score global du jour</div>
+      <div style="text-align:center; padding:16px 0;">
+        <div style="font-size:64px; font-weight:800; background:linear-gradient(135deg, var(--gold), var(--green)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1;" id="global-score">0</div>
+        <div style="font-size:12px; color:var(--text2); text-transform:uppercase; letter-spacing:2px; margin-top:4px;">Points sur 100</div>
+        <div class="progress-bar-wrap" style="margin-top:12px;">
+          <div class="progress-bar-fill" id="global-progress-bar" style="width:0%; background:linear-gradient(90deg, var(--gold-dark), var(--green));"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BREAKDOWN -->
+    <div class="card">
+      <div class="section-title">📋 Détail des scores</div>
+      <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
+        <div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+            <div style="font-size:13px; font-weight:600;">☪️ Deen</div>
+            <div style="font-size:13px; color:var(--gold); font-weight:700;" id="score-deen">0/30</div>
+          </div>
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" id="bar-deen" style="width:0%;"></div></div>
+        </div>
+        <div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+            <div style="font-size:13px; font-weight:600;">💪 Sport</div>
+            <div style="font-size:13px; color:var(--blue); font-weight:700;" id="score-sport">0/25</div>
+          </div>
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" id="bar-sport" style="width:0%; background:var(--blue);"></div></div>
+        </div>
+        <div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+            <div style="font-size:13px; font-weight:600;">📅 Tâches</div>
+            <div style="font-size:13px; color:var(--purple); font-weight:700;" id="score-tasks">0/25</div>
+          </div>
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" id="bar-tasks" style="width:0%; background:var(--purple);"></div></div>
+        </div>
+        <div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+            <div style="font-size:13px; font-weight:600;">🔥 NoFap</div>
+            <div style="font-size:13px; color:var(--red); font-weight:700;" id="score-nofap">0/20</div>
+          </div>
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" id="bar-nofap" style="width:0%; background:var(--red);"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 30 DAY HEATMAP -->
+    <div class="card">
+      <div class="section-title">📅 Heatmap 30 jours</div>
+      <div id="monthly-heatmap" style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-top:8px;"></div>
+    </div>
+
+    <!-- BADGES -->
+    <div class="card">
+      <div class="section-title">🏆 Badges débloqués</div>
+      <div id="badges-grid" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;"></div>
+    </div>
+
+    <!-- RESET ALL -->
+    <div style="margin-top:8px; margin-bottom:8px;">
+      <button class="btn-ghost" onclick="confirmFullReset()" style="font-size:12px; color:var(--text2);">🗑️ Réinitialiser toutes les données</button>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-item active" id="nav-nofap" onclick="switchTab('nofap')">
+    <div class="nav-icon">🔥</div>
+    <div class="nav-label">Combattant</div>
+  </div>
+  <div class="nav-item" id="nav-schedule" onclick="switchTab('schedule')">
+    <div class="nav-icon">📅</div>
+    <div class="nav-label">Journée</div>
+  </div>
+  <div class="nav-item" id="nav-sport" onclick="switchTab('sport')">
+    <div class="nav-icon">💪</div>
+    <div class="nav-label">Sport</div>
+  </div>
+  <div class="nav-item" id="nav-deen" onclick="switchTab('deen')">
+    <div class="nav-icon">☪️</div>
+    <div class="nav-label">Deen</div>
+  </div>
+  <div class="nav-item" id="nav-stats" onclick="switchTab('stats')">
+    <div class="nav-icon">📊</div>
+    <div class="nav-label">Stats</div>
+  </div>
+</div>
+
+<!-- ADD TASK MODAL -->
+<div class="modal-overlay" id="add-task-modal">
+  <div class="modal">
+    <div class="modal-title">✚ Nouvelle tâche</div>
+    <input type="text" class="modal-input" id="new-task-name" placeholder="Nom de la tâche..." maxlength="60">
+    <input type="time" class="modal-input" id="new-task-time" value="08:00">
+    <div style="font-size:12px; color:var(--text2); margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">Catégorie</div>
+    <div class="cat-select">
+      <button class="cat-btn sport selected" data-cat="sport" onclick="selectCat(this)">🏃 Sport</button>
+      <button class="cat-btn deen" data-cat="deen" onclick="selectCat(this)">☪️ Deen</button>
+      <button class="cat-btn work" data-cat="work" onclick="selectCat(this)">💼 Travail</button>
+      <button class="cat-btn health" data-cat="health" onclick="selectCat(this)">🥗 Santé</button>
+      <button class="cat-btn self" data-cat="self" onclick="selectCat(this)">✨ Perso</button>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn-ghost" onclick="closeModal('add-task-modal')" style="flex:1;">Annuler</button>
+      <button class="btn-gold" onclick="addTask()" style="flex:2;">Ajouter ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- CELEBRATION MODAL -->
+<div class="celebration" id="celebration">
+  <div id="celebration-card" class="celebration-card">
+    <span class="celebration-emoji" id="cel-emoji">🏆</span>
+    <div class="celebration-title" id="cel-title">Checkpoint atteint !</div>
+    <div class="celebration-arabic" id="cel-arabic">الْحَمْدُ لِلَّهِ</div>
+    <div class="celebration-sub" id="cel-sub">Tu avances sur le chemin de la purification.</div>
+    <button class="btn-gold" style="margin-top:20px;" onclick="closeCelebration()">بِإِذْنِ اللَّهِ — Continuer</button>
+  </div>
+</div>
+
+<!-- RESET CONFIRM -->
+<div class="modal-overlay" id="reset-modal">
+  <div class="modal">
+    <div class="modal-title" style="color:var(--red);">⚠️ Déclarer une rechute</div>
+    <div class="ayah-card" style="margin-bottom:16px;">
+      <div class="ayah-text" style="font-size:16px;">إِنَّ اللَّهَ يُحِبُّ التَّوَّابِينَ</div>
+      <div class="ayah-ref">« Allah aime ceux qui se repentent » — Al-Baqara 2:222</div>
+    </div>
+    <div style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:16px;">
+      Fais d'abord <strong style="color:var(--gold);">istighfar</strong> (اسْتَغْفِرِ اللَّهَ). Chaque rechute est une occasion de se relever plus fort. Allah pardonne toujours.
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn-ghost" onclick="closeModal('reset-modal')" style="flex:1;">Je tiens bon !</button>
+      <button class="btn-danger" onclick="doReset()" style="flex:1;">Réinitialiser</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  nofap: {
+    startDate: null,
+    currentDays: 0,
+    bestStreak: 0,
+    totalDays: 0,
+    totalResets: 0,
+  },
+  tasks: [],
+  workouts: [],
+  weights: [],
+  prayers: { fajr: false, dhuhr: false, asr: false, maghrib: false, isha: false },
+  dhikr: { subhan: 0, alhamdulillah: 0, allahuakbar: 0, istighfar: 0, salawat: 0 },
+  quranPages: 0,
+  sportStreak: 0,
+  dailyScores: {},
+  badges: [],
+};
+
+const CHECKPOINTS = [
+  { day: 1,  emoji: '🌱', name: 'Premier Lever', reward: 'Tu as survécu au jour le plus dur', arabic: 'بِسْمِ اللَّهِ' },
+  { day: 3,  emoji: '🛡️', name: 'Muraille de Foi', reward: 'Fais 3 rakaat de Nafl', arabic: 'صَبَرْتَ' },
+  { day: 7,  emoji: '⚔️', name: 'Guerrier d\'Allah', reward: 'Une semaine de Taqwa', arabic: 'جَزَاكَ اللَّهُ خَيْرًا' },
+  { day: 14, emoji: '🌙', name: 'Lumière de la Lune', reward: 'Lis Sourate Al-Kahf en entier', arabic: 'نُورٌ عَلَى نُورٍ' },
+  { day: 21, emoji: '🔥', name: 'Forjeur d\'Habitudes', reward: 'Le cerveau commence à se réparer', arabic: 'إِنَّ مَعَ الْعُسْرِ يُسْرًا' },
+  { day: 30, emoji: '🌟', name: 'Un Mois de Pureté', reward: 'Offre-toi une récompense halal', arabic: 'الصَّبْرُ جَمِيلٌ' },
+  { day: 60, emoji: '💎', name: 'Diamant de l\'Âme', reward: 'Tu as reconfiguré ton cerveau', arabic: 'وَاللَّهُ مَعَ الصَّابِرِينَ' },
+  { day: 90, emoji: '👑', name: 'Sultan de la Nafs', reward: 'Tu domines ton ego — 90 jours !', arabic: 'فَإِنَّ اللَّهَ لَا يُضَيِّعُ أَجْرَ الْمُحْسِنِينَ' },
+  { day: 180, emoji: '🕌', name: 'Maître Spirituel', reward: 'Une vie changée, un cœur purifié', arabic: 'قَدْ أَفْلَحَ مَن زَكَّاهَا' },
+  { day: 365, emoji: '✨', name: 'Mukhlis — Le Sincère', reward: 'Une année entière — tu es un modèle', arabic: 'إِنَّ الْمُتَّقِينَ فِي جَنَّاتٍ وَنَهَرٍ' },
+];
+
+const DEFAULT_TASKS = [
+  { id: 1, name: 'Prière Fajr', time: '06:12', cat: 'deen', done: false },
+  { id: 2, name: 'Sport / Exercice 30min', time: '07:30', cat: 'sport', done: false },
+  { id: 3, name: 'Douche froide', time: '08:00', cat: 'health', done: false },
+  { id: 4, name: 'Petit-déjeuner sain', time: '08:15', cat: 'health', done: false },
+  { id: 5, name: 'Lecture / Apprentissage', time: '09:00', cat: 'work', done: false },
+  { id: 6, name: 'Prière Dhuhr', time: '13:24', cat: 'deen', done: false },
+  { id: 7, name: 'Déjeuner équilibré', time: '13:30', cat: 'health', done: false },
+  { id: 8, name: 'Travail / Études', time: '14:00', cat: 'work', done: false },
+  { id: 9, name: 'Prière Asr', time: '16:45', cat: 'deen', done: false },
+  { id: 10, name: 'Dhikr du soir', time: '20:00', cat: 'deen', done: false },
+  { id: 11, name: 'Prière Maghrib', time: '19:52', cat: 'deen', done: false },
+  { id: 12, name: 'Prière Isha', time: '21:18', cat: 'deen', done: false },
+  { id: 13, name: 'Pas de réseaux après 22h', time: '22:00', cat: 'self', done: false },
+  { id: 14, name: 'Dormir avant minuit', time: '23:30', cat: 'health', done: false },
+];
+
+const DHIKR_LIST = [
+  { key: 'subhan', arabic: 'سُبْحَانَ اللَّهِ', french: 'Gloire à Allah', target: 33 },
+  { key: 'alhamdulillah', arabic: 'الْحَمْدُ لِلَّهِ', french: 'Louange à Allah', target: 33 },
+  { key: 'allahuakbar', arabic: 'اللَّهُ أَكْبَرُ', french: 'Allah est le Plus Grand', target: 33 },
+  { key: 'istighfar', arabic: 'أَسْتَغْفِرُ اللَّهَ', french: 'Je demande pardon à Allah', target: 100 },
+  { key: 'salawat', arabic: 'صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ', french: 'Prière sur le Prophète ﷺ', target: 100 },
+];
+
+const BADGES = [
+  { id: 'first_day', emoji: '🌱', name: '1er jour', condition: (s) => s.nofap.currentDays >= 1 },
+  { id: 'week', emoji: '⚔️', name: '7 jours', condition: (s) => s.nofap.currentDays >= 7 },
+  { id: 'month', emoji: '🌟', name: '30 jours', condition: (s) => s.nofap.currentDays >= 30 },
+  { id: 'all_prayers', emoji: '🕌', name: '5/5 Prières', condition: (s) => Object.values(s.prayers).filter(Boolean).length === 5 },
+  { id: 'workout', emoji: '💪', name: 'Athlète', condition: (s) => s.workouts.length >= 5 },
+  { id: 'dhikr_done', emoji: '📿', name: 'Dhikr complet', condition: (s) => s.dhikr.subhan >= 33 && s.dhikr.alhamdulillah >= 33 && s.dhikr.allahuakbar >= 33 },
+  { id: 'quran_week', emoji: '📖', name: 'Lecteur', condition: (s) => s.quranPages >= 7 },
+  { id: 'tasks_100', emoji: '✅', name: 'Jour parfait', condition: (s) => {
+    const done = s.tasks.filter(t => t.done).length;
+    return s.tasks.length > 0 && done === s.tasks.length;
+  }},
+];
+
+const QUOTES = [
+  { text: "Celui qui combat sa nafs est le vrai guerrier.", source: "Hadith" },
+  { text: "La chasteté est une richesse que Shaytan ne peut pas voler à celui qui la protège.", source: "Sagesse islamique" },
+  { text: "Baissez vos regards. C'est plus pur pour vos cœurs.", source: "An-Nur 24:30" },
+  { text: "Allah n'impose à aucune âme une charge supérieure à sa capacité.", source: "Al-Baqara 2:286" },
+  { text: "Certes, le salât préserve de la turpitude et du blâmable.", source: "Al-'Ankabut 29:45" },
+  { text: "Jeûne, car le jeûne est un bouclier contre le feu.", source: "Hadith" },
+];
+
+// ============================================================
+// STORAGE
+// ============================================================
+function saveState() {
+  try { localStorage.setItem('tazkiyah_state', JSON.stringify(state)); } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('tazkiyah_state');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state = { ...state, ...parsed };
+      // Ensure tasks always has something
+      if (!state.tasks || state.tasks.length === 0) state.tasks = JSON.parse(JSON.stringify(DEFAULT_TASKS));
+    } else {
+      state.tasks = JSON.parse(JSON.stringify(DEFAULT_TASKS));
+      state.nofap.startDate = new Date().toISOString();
+    }
+  } catch(e) {
+    state.tasks = JSON.parse(JSON.stringify(DEFAULT_TASKS));
+    state.nofap.startDate = new Date().toISOString();
+  }
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  document.getElementById('section-' + tab).classList.add('active');
+
+  const tabs = document.querySelectorAll('.tab');
+  const tabMap = ['nofap','schedule','sport','deen','stats'];
+  tabs[tabMap.indexOf(tab)].classList.add('active');
+  document.getElementById('nav-' + tab).classList.add('active');
+
+  if (tab === 'stats') updateStats();
+}
+
+// ============================================================
+// NOFAP
+// ============================================================
+function getDayCount() {
+  if (!state.nofap.startDate) return 0;
+  const start = new Date(state.nofap.startDate);
+  const now = new Date();
+  return Math.floor((now - start) / (1000 * 60 * 60 * 24));
+}
+
+function updateCounter() {
+  const days = getDayCount();
+  state.nofap.currentDays = days;
+  if (days > state.nofap.bestStreak) state.nofap.bestStreak = days;
+
+  document.getElementById('days-count').textContent = days;
+  document.getElementById('best-streak').textContent = state.nofap.bestStreak;
+  document.getElementById('total-resets').textContent = state.nofap.totalResets;
+  document.getElementById('total-days').textContent = state.nofap.totalDays + days;
+
+  // Ring progress (target: 30 days = full circle)
+  const progress = Math.min(days / 30, 1);
+  const circumference = 502.65;
+  const offset = circumference - (progress * circumference);
+  document.getElementById('ring-progress').style.strokeDashoffset = offset;
+
+  // Badge level
+  const badge = document.getElementById('level-badge');
+  let level;
+  if (days === 0) level = '🌱 Nouveau Départ';
+  else if (days < 3) level = '😰 En lutte';
+  else if (days < 7) level = '🛡️ Résistant';
+  else if (days < 14) level = '⚔️ Guerrier';
+  else if (days < 30) level = '🌙 Purificateur';
+  else if (days < 60) level = '🌟 Pur';
+  else if (days < 90) level = '💎 Maître';
+  else level = '👑 Sultan';
+  badge.textContent = level;
+
+  // Quote
+  const q = QUOTES[days % QUOTES.length];
+  document.getElementById('motivation-quote').innerHTML =
+    `<div class="quote-text">"${q.text}"</div><div class="quote-source">— ${q.source}</div>`;
+
+  renderCheckpoints();
+  checkForNewCheckpoint(days);
+  saveState();
+}
+
+function renderCheckpoints() {
+  const days = state.nofap.currentDays;
+  const container = document.getElementById('checkpoints-list');
+  container.innerHTML = '';
+
+  CHECKPOINTS.forEach(cp => {
+    const unlocked = days >= cp.day;
+    const current = !unlocked && days < cp.day && (days >= (CHECKPOINTS[CHECKPOINTS.indexOf(cp) - 1]?.day || 0));
+    const div = document.createElement('div');
+    div.className = 'checkpoint ' + (unlocked ? 'unlocked' : current ? 'current' : '');
+    div.innerHTML = `
+      <div class="cp-icon">${cp.emoji}</div>
+      <div class="cp-info">
+        <div class="cp-day">Jour ${cp.day}</div>
+        <div class="cp-name">${cp.name}</div>
+        <div class="cp-reward">${cp.reward}</div>
+      </div>
+      <div class="cp-badge ${unlocked ? 'done' : current ? 'next' : 'locked'}">
+        ${unlocked ? '✓ OK' : current ? '→ Next' : '🔒'}
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+let lastCheckedDay = -1;
+function checkForNewCheckpoint(days) {
+  if (days === lastCheckedDay || days === 0) return;
+  const cp = CHECKPOINTS.find(c => c.day === days);
+  if (cp) {
+    showCelebration(cp.emoji, `Checkpoint J${cp.day} — ${cp.name}`, cp.arabic, cp.reward);
+  }
+  lastCheckedDay = days;
+}
+
+function confirmReset() {
+  document.getElementById('reset-modal').classList.add('open');
+}
+
+function doReset() {
+  const days = getDayCount();
+  state.nofap.totalResets++;
+  state.nofap.totalDays += days;
+  state.nofap.startDate = new Date().toISOString();
+  lastCheckedDay = -1;
+  closeModal('reset-modal');
+  updateCounter();
+  saveState();
+}
+
+// ============================================================
+// TASKS
+// ============================================================
+let selectedCat = 'sport';
+
+function renderTasks() {
+  const container = document.getElementById('tasks-container');
+  container.innerHTML = '';
+  const sorted = [...state.tasks].sort((a, b) => a.time.localeCompare(b.time));
+  
+  sorted.forEach(task => {
+    const catLabels = { sport: '🏃 Sport', deen: '☪️ Deen', work: '💼 Travail', health: '🥗 Santé', self: '✨ Perso' };
+    const div = document.createElement('div');
+    div.className = 'task-item' + (task.done ? ' completed' : '');
+    div.onclick = () => toggleTask(task.id);
+    div.innerHTML = `
+      <div class="task-check">${task.done ? '✓' : ''}</div>
+      <div class="task-info">
+        <div class="task-name">${task.name}</div>
+        <div class="task-meta">
+          <span>${task.time}</span>
+          <span class="task-cat cat-${task.cat}">${catLabels[task.cat] || task.cat}</span>
+        </div>
+      </div>
+      <div onclick="deleteTask(event, ${task.id})" style="font-size:16px; color:var(--text2); padding:4px; cursor:pointer; opacity:0.4; transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.4">×</div>
+    `;
+    container.appendChild(div);
+  });
+
+  updateTaskProgress();
+}
+
+function toggleTask(id) {
+  const task = state.tasks.find(t => t.id === id);
+  if (!task) return;
+  task.done = !task.done;
+  renderTasks();
+  saveState();
+  updateStats();
+
+  if (task.done) {
+    const done = state.tasks.filter(t => t.done).length;
+    const total = state.tasks.length;
+    if (done === total) {
+      setTimeout(() => showCelebration('🏆', 'Journée 100% complète !', 'مَاشَاءَ اللَّهُ', 'Tu as accompli toutes tes tâches. Allah voit ton effort.'), 500);
+    }
+  }
+}
+
+function deleteTask(e, id) {
+  e.stopPropagation();
+  state.tasks = state.tasks.filter(t => t.id !== id);
+  renderTasks();
+  saveState();
+}
+
+function updateTaskProgress() {
+  const done = state.tasks.filter(t => t.done).length;
+  const total = state.tasks.length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  document.getElementById('main-progress-bar').style.width = pct + '%';
+  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('tasks-done-badge').textContent = `${done}/${total} ✓`;
+}
+
+function openAddTask() {
+  document.getElementById('add-task-modal').classList.add('open');
+}
+
+function selectCat(btn) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedCat = btn.dataset.cat;
+}
+
+function addTask() {
+  const name = document.getElementById('new-task-name').value.trim();
+  const time = document.getElementById('new-task-time').value;
+  if (!name) return;
+
+  const task = {
+    id: Date.now(),
+    name,
+    time,
+    cat: selectedCat,
+    done: false,
+  };
+  state.tasks.push(task);
+  renderTasks();
+  saveState();
+  closeModal('add-task-modal');
+  document.getElementById('new-task-name').value = '';
+}
+
+// ============================================================
+// DATE
+// ============================================================
+function updateDate() {
+  const now = new Date();
+  const days = ['DIMANCHE','LUNDI','MARDI','MERCREDI','JEUDI','VENDREDI','SAMEDI'];
+  const months = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  document.getElementById('current-day-name').textContent = days[now.getDay()];
+  document.getElementById('current-date').textContent = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+}
+
+// ============================================================
+// SPORT
+// ============================================================
+function renderWeeklyChart() {
+  const container = document.getElementById('weekly-chart');
+  container.innerHTML = '';
+  const days = ['L','M','M','J','V','S','D'];
+  const today = new Date().getDay();
+  const weekData = [0,0,0,0,0,0,0];
+
+  // Fill with actual workout data
+  state.workouts.forEach(w => {
+    const d = new Date(w.date);
+    const diff = Math.floor((new Date() - d) / (1000*60*60*24));
+    if (diff < 7) {
+      const idx = (d.getDay() + 6) % 7;
+      weekData[idx] = Math.max(weekData[idx], w.duration || 0);
+    }
+  });
+
+  const maxVal = Math.max(...weekData, 60);
+  days.forEach((day, i) => {
+    const todayIdx = (today + 6) % 7;
+    const pct = weekData[i] > 0 ? (weekData[i] / maxVal) * 90 : 4;
+    const wrap = document.createElement('div');
+    wrap.className = 'chart-bar-wrap';
+    wrap.innerHTML = `
+      <div class="chart-bar ${i === todayIdx ? 'today' : ''}" style="height:${pct}%;" title="${weekData[i]} min"></div>
+      <div class="chart-bar-label">${day}</div>
+    `;
+    container.appendChild(wrap);
+  });
+}
+
+function logWorkout() {
+  const type = document.getElementById('workout-type-select').value;
+  const duration = parseInt(document.getElementById('workout-duration').value) || 0;
+  const intensity = parseInt(document.getElementById('workout-intensity').value) || 5;
+  if (!type || duration <= 0) return;
+
+  const entry = { type, duration, intensity, date: new Date().toISOString() };
+  state.workouts.unshift(entry);
+  if (state.workouts.length > 50) state.workouts.pop();
+
+  document.getElementById('workout-type-select').value = '';
+  document.getElementById('workout-duration').value = '';
+  document.getElementById('workout-intensity').value = '';
+
+  renderWorkoutLog();
+  renderWeeklyChart();
+  updateSportStats();
+  saveState();
+  showCelebration('💪', 'Séance loggée !', 'بَارَكَ اللَّهُ فِيكَ', `${type} — ${duration} min à intensité ${intensity}/10`);
+}
+
+function renderWorkoutLog() {
+  const container = document.getElementById('workout-log');
+  if (state.workouts.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text2);font-size:13px;padding:16px;">Aucune séance enregistrée</div>';
+    return;
+  }
+  container.innerHTML = '';
+  state.workouts.slice(0, 10).forEach(w => {
+    const d = new Date(w.date);
+    const dateStr = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    const div = document.createElement('div');
+    div.className = 'workout-entry';
+    div.innerHTML = `
+      <div class="workout-type">
+        <div class="workout-icon">${w.type.split(' ')[0]}</div>
+        <div>
+          <div class="workout-name">${w.type.split(' ').slice(1).join(' ')}</div>
+          <div class="workout-info">${dateStr} · ${w.duration} min · Intensité ${w.intensity}/10</div>
+        </div>
+      </div>
+      <div style="font-size:20px; color:var(--gold);">🔥</div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function updateSportStats() {
+  const weekWorkouts = state.workouts.filter(w => {
+    const d = new Date(w.date);
+    return (new Date() - d) < 7 * 24 * 60 * 60 * 1000;
+  });
+
+  document.getElementById('workouts-week').textContent = weekWorkouts.length;
+  document.getElementById('total-minutes').textContent = weekWorkouts.reduce((s, w) => s + (w.duration || 0), 0);
+  document.getElementById('total-workouts').textContent = state.workouts.length;
+
+  // Sport streak
+  let streak = 0;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  for (let i = 0; i < 30; i++) {
+    const check = new Date(today);
+    check.setDate(today.getDate() - i);
+    const hasWorkout = state.workouts.some(w => {
+      const d = new Date(w.date);
+      d.setHours(0,0,0,0);
+      return d.getTime() === check.getTime();
+    });
+    if (hasWorkout) streak++;
+    else if (i > 0) break;
+  }
+  state.sportStreak = streak;
+  document.getElementById('sport-streak').textContent = streak;
+}
+
+function logWeight() {
+  const val = parseFloat(document.getElementById('weight-input').value);
+  if (!val || val < 30 || val > 300) return;
+  state.weights.unshift({ weight: val, date: new Date().toISOString() });
+  if (state.weights.length > 30) state.weights.pop();
+  document.getElementById('weight-input').value = '';
+  renderWeightHistory();
+  saveState();
+}
+
+function renderWeightHistory() {
+  const container = document.getElementById('weight-history');
+  if (state.weights.length === 0) { container.innerHTML = ''; return; }
+  container.innerHTML = '';
+  state.weights.slice(0, 5).forEach(w => {
+    const d = new Date(w.date);
+    const dateStr = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);';
+    div.innerHTML = `
+      <span style="font-size:13px;color:var(--text2);">${dateStr}</span>
+      <span style="font-size:16px;font-weight:700;color:var(--gold);">${w.weight} kg</span>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// ============================================================
+// DEEN
+// ============================================================
+function togglePrayer(name) {
+  state.prayers[name] = !state.prayers[name];
+  const el = document.getElementById('pcheck-' + name);
+  el.classList.toggle('done', state.prayers[name]);
+
+  const done = Object.values(state.prayers).filter(Boolean).length;
+  document.getElementById('prayers-progress').style.width = (done / 5 * 100) + '%';
+  document.getElementById('prayers-count').textContent = `${done}/5 prières`;
+
+  if (done === 5) {
+    showCelebration('🕌', 'Les 5 prières accomplies !', 'الْحَمْدُ لِلَّهِ', 'Tu as accompli ton pilier. Que Allah accepte tes prières.');
+  }
+  saveState();
+}
+
+function renderDhikr() {
+  const container = document.getElementById('dhikr-list');
+  container.innerHTML = '';
+  DHIKR_LIST.forEach(d => {
+    const count = state.dhikr[d.key] || 0;
+    const pct = Math.min((count / d.target) * 100, 100);
+    const div = document.createElement('div');
+    div.className = 'dhikr-item';
+    div.onclick = () => incrementDhikr(d.key, d.target);
+    div.innerHTML = `
+      <div>
+        <div class="dhikr-arabic">${d.arabic}</div>
+        <div class="dhikr-french">${d.french}</div>
+      </div>
+      <div class="dhikr-counter">
+        <div class="dhikr-count">${count}</div>
+        <div class="dhikr-target">/ ${d.target}</div>
+        <div class="dhikr-mini-bar"><div class="dhikr-mini-fill" style="width:${pct}%"></div></div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function incrementDhikr(key, target) {
+  if (state.dhikr[key] < target) {
+    state.dhikr[key]++;
+  } else {
+    state.dhikr[key] = 0;
+  }
+  renderDhikr();
+  saveState();
+}
+
+function resetDhikr() {
+  DHIKR_LIST.forEach(d => state.dhikr[d.key] = 0);
+  renderDhikr();
+  saveState();
+}
+
+function changeQuranPages(delta) {
+  state.quranPages = Math.max(0, (state.quranPages || 0) + delta);
+  document.getElementById('quran-pages').textContent = state.quranPages;
+  const goal = 5;
+  document.getElementById('quran-progress').style.width = Math.min((state.quranPages / goal) * 100, 100) + '%';
+  saveState();
+}
+
+function renderDeenHeatmap() {
+  const container = document.getElementById('deen-heatmap');
+  container.innerHTML = '';
+  const days = ['L','M','M','J','V','S','D'];
+  const today = new Date().getDay();
+  days.forEach((d, i) => {
+    const isToday = i === (today + 6) % 7;
+    const level = Math.floor(Math.random() * 3); // Placeholder
+    const cell = document.createElement('div');
+    cell.className = `heatmap-day level-${level} ${isToday ? 'today' : ''}`;
+    cell.innerHTML = `<span>${d}</span>`;
+    container.appendChild(cell);
+  });
+}
+
+// ============================================================
+// STATS
+// ============================================================
+function updateStats() {
+  // Deen score
+  const prayersDone = Object.values(state.prayers).filter(Boolean).length;
+  const dhikrDone = (state.dhikr.subhan >= 33 ? 1 : 0) + (state.dhikr.alhamdulillah >= 33 ? 1 : 0) + (state.dhikr.allahuakbar >= 33 ? 1 : 0);
+  const quranDone = state.quranPages >= 5 ? 1 : 0;
+  const deenScore = Math.round((prayersDone / 5) * 20 + (dhikrDone / 3) * 6 + quranDone * 4);
+
+  // Sport score
+  const todayWorkout = state.workouts.some(w => {
+    const d = new Date(w.date);
+    const now = new Date();
+    return d.toDateString() === now.toDateString();
+  });
+  const sportScore = todayWorkout ? 25 : Math.round(state.sportStreak * 2);
+
+  // Tasks score
+  const tasksDone = state.tasks.filter(t => t.done).length;
+  const tasksTotal = state.tasks.length;
+  const tasksScore = tasksTotal > 0 ? Math.round((tasksDone / tasksTotal) * 25) : 0;
+
+  // NoFap score
+  const days = getDayCount();
+  const nofapScore = Math.min(days >= 30 ? 20 : Math.round((days / 30) * 20), 20);
+
+  const total = deenScore + sportScore + tasksScore + nofapScore;
+
+  document.getElementById('global-score').textContent = total;
+  document.getElementById('global-progress-bar').style.width = total + '%';
+
+  document.getElementById('score-deen').textContent = `${deenScore}/30`;
+  document.getElementById('bar-deen').style.width = (deenScore / 30 * 100) + '%';
+
+  document.getElementById('score-sport').textContent = `${Math.min(sportScore, 25)}/25`;
+  document.getElementById('bar-sport').style.width = (Math.min(sportScore, 25) / 25 * 100) + '%';
+
+  document.getElementById('score-tasks').textContent = `${tasksScore}/25`;
+  document.getElementById('bar-tasks').style.width = (tasksScore / 25 * 100) + '%';
+
+  document.getElementById('score-nofap').textContent = `${nofapScore}/20`;
+  document.getElementById('bar-nofap').style.width = (nofapScore / 20 * 100) + '%';
+
+  renderMonthlyHeatmap();
+  renderBadges();
+}
+
+function renderMonthlyHeatmap() {
+  const container = document.getElementById('monthly-heatmap');
+  container.innerHTML = '';
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const isToday = i === 0;
+    const level = Math.floor(Math.random() * 4);
+    const cell = document.createElement('div');
+    cell.style.cssText = `aspect-ratio:1;border-radius:4px;background:${
+      level === 0 ? 'var(--dark5)' :
+      level === 1 ? 'rgba(201,168,76,0.2)' :
+      level === 2 ? 'rgba(201,168,76,0.5)' :
+      'var(--gold)'
+    };${isToday ? 'border:2px solid var(--gold);' : ''}`;
+    container.appendChild(cell);
+  }
+}
+
+function renderBadges() {
+  const container = document.getElementById('badges-grid');
+  container.innerHTML = '';
+  BADGES.forEach(b => {
+    const unlocked = b.condition(state);
+    const div = document.createElement('div');
+    div.style.cssText = `display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px;border-radius:12px;background:${unlocked ? 'rgba(201,168,76,0.1)' : 'var(--dark4)'};border:1px solid ${unlocked ? 'rgba(201,168,76,0.3)' : 'transparent'};min-width:70px;opacity:${unlocked ? 1 : 0.3};`;
+    div.innerHTML = `<div style="font-size:24px;">${b.emoji}</div><div style="font-size:10px;color:var(--text2);text-align:center;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">${b.name}</div>`;
+    container.appendChild(div);
+  });
+}
+
+// ============================================================
+// CELEBRATION
+// ============================================================
+function showCelebration(emoji, title, arabic, sub) {
+  document.getElementById('cel-emoji').textContent = emoji;
+  document.getElementById('cel-title').textContent = title;
+  document.getElementById('cel-arabic').textContent = arabic;
+  document.getElementById('cel-sub').textContent = sub;
+  document.getElementById('celebration').classList.add('show');
+  launchConfetti();
+}
+
+function closeCelebration() {
+  document.getElementById('celebration').classList.remove('show');
+  document.querySelectorAll('.confetti-piece').forEach(c => c.remove());
+}
+
+function launchConfetti() {
+  const colors = ['#C9A84C','#E8C97A','#2ECC71','#3498DB','#9B59B6','#E74C3C'];
+  for (let i = 0; i < 40; i++) {
+    setTimeout(() => {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.cssText = `
+        left: ${Math.random() * 100}vw;
+        top: -20px;
+        background: ${colors[Math.floor(Math.random() * colors.length)]};
+        width: ${Math.random() * 8 + 4}px;
+        height: ${Math.random() * 8 + 4}px;
+        animation-delay: ${Math.random() * 0.5}s;
+        animation-duration: ${Math.random() * 2 + 2}s;
+      `;
+      document.body.appendChild(piece);
+    }, i * 30);
+  }
+}
+
+// ============================================================
+// EMERGENCY
+// ============================================================
+function emergencyAction(el, name) {
+  el.classList.toggle('completed');
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function confirmFullReset() {
+  if (confirm('⚠️ Effacer TOUTES les données ? Cette action est irréversible.')) {
+    localStorage.removeItem('tazkiyah_state');
+    location.reload();
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  loadState();
+  updateDate();
+  updateCounter();
+  renderTasks();
+  renderWorkoutLog();
+  renderWeeklyChart();
+  updateSportStats();
+  renderWeightHistory();
+  renderDhikr();
+  renderDeenHeatmap();
+
+  // Restore prayers
+  ['fajr','dhuhr','asr','maghrib','isha'].forEach(p => {
+    if (state.prayers[p]) {
+      document.getElementById('pcheck-' + p).classList.add('done');
+    }
+  });
+  const pDone = Object.values(state.prayers).filter(Boolean).length;
+  document.getElementById('prayers-progress').style.width = (pDone / 5 * 100) + '%';
+  document.getElementById('prayers-count').textContent = `${pDone}/5 prières`;
+
+  // Restore quran
+  document.getElementById('quran-pages').textContent = state.quranPages || 0;
+  const qGoal = 5;
+  document.getElementById('quran-progress').style.width = Math.min(((state.quranPages || 0) / qGoal) * 100, 100) + '%';
+
+  // Auto refresh counter
+  setInterval(updateCounter, 60000);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
